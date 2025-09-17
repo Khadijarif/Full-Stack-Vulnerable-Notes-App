@@ -2,7 +2,7 @@
 
 A deliberately vulnerable, full‑stack notes application implemented for educational and security testing purposes. It demonstrates typical web application functionality (user auth, CRUD notes, admin views) and includes intentionally insecure code to teach common vulnerabilities such as SQL Injection (SQLi), Cross-Site Scripting (XSS), and Insecure Direct Object References (IDOR).
 
-**WARNING**: This project is intentionally insecure. Do NOT deploy it on a public or production server. Use only in controlled, local, or lab environments.
+##**WARNING**: This project is intentionally insecure. Do NOT deploy it on a public or production server. Use only in controlled, local, or lab environments.
 
 **Features**
 
