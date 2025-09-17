@@ -1,4 +1,3 @@
-# Full-Stack-Vulnerable-Notes-App
 
 # Full-Stack Vulnerable Notes Application
 
@@ -36,9 +35,9 @@ Unescaped input allows an attacker to inject SQL fragments, enabling them to rea
 - Use parameterized queries / prepared statements: 
 db.run("SELECT * FROM users WHERE email = ?", [email], ...)
 
--Validate and sanitize user inputs server‑side.
+- Validate and sanitize user inputs server‑side.
 
--Use least-privileged DB accounts and avoid returning raw DB error messages to users.
+- Use least-privileged DB accounts and avoid returning raw DB error messages to users.
 
 ### 2) Cross-Site Scripting (XSS)
 
@@ -48,11 +47,11 @@ db.run("SELECT * FROM users WHERE email = ?", [email], ...)
 
 **Remediation:**
 
--Escape output when rendering user content in HTML (contextual escaping for HTML, attributes, JS, URLs).
+- Escape output when rendering user content in HTML (contextual escaping for HTML, attributes, JS, URLs).
 
--Use templating libraries that auto-escape by default.
+- Use templating libraries that auto-escape by default.
 
--Implement Content Security Policy (CSP) headers to reduce the impact of injected scripts.
+- Implement Content Security Policy (CSP) headers to reduce the impact of injected scripts.
 
 ### 3) Insecure Direct Object Reference (IDOR)
 
@@ -62,34 +61,39 @@ db.run("SELECT * FROM users WHERE email = ?", [email], ...)
 
 **Remediation:**
 
--Enforce server-side authorization checks: confirm that the logged-in user owns the resource before returning or modifying it.
+- Enforce server-side authorization checks: confirm that the logged-in user owns the resource before returning or modifying it.
 
--Use non-guessable IDs (UUIDs, random tokens) and always still enforce authorization checks (IDs alone are not a security control).
+- Use non-guessable IDs (UUIDs, random tokens) and always still enforce authorization checks (IDs alone are not a security control).
 
 ---
 
 ## Files of interest
 
--server.js — main server and route handlers
+- server.js — main server and route handlers
 
--database.db — SQLite DB file (sample/test data)
+- database.db — SQLite DB file (sample/test data)
 
--views/*.html — front-end pages (login, register, dashboard, admin, etc.)
+- views/*.html — front-end pages (login, register, dashboard, admin, etc.)
 
--public/* — CSS and static assets
+- public/* — CSS and static assets
 
--.gitignore — files/directories excluded from Git (should include node_modules/, .env)
+- .gitignore — files/directories excluded from Git (should include node_modules/, .env)
 
 ---
 
 ### How to run (local, safe environment)
 
--Clone the repo locally.
--Install dependencies (do inside an isolated environment):
--npm install
--Ensure database.db is present (or run a provided script to create it if included).
--Start server (development only): node server.js
--Open http://localhost:3000 (or the configured port) in your browser.
+- Clone the repo locally.
+
+- Install dependencies (do inside an isolated environment):
+
+- npm install
+
+- Ensure database.db is present (or run a provided script to create it if included).
+
+- Start server (development only): node server.js
+
+- Open http://localhost:3000 (or the configured port) in your browser.
 
 Always run this app in an isolated environment (VM, local machine, or container) and do not expose it to the public internet.
 
