@@ -73,6 +73,14 @@ app.get('/register', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'register.html'));
 });
 
+// ADDED: Serve note.html page
+app.get('/note.html', (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect('/login');
+  }
+  res.sendFile(path.join(__dirname, 'views', 'note.html'));
+});
+
 app.get('/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) {
@@ -215,17 +223,59 @@ app.put('/admin/users/:id', (req, res) => {
 });
 
 // Notes endpoints
+// Get all notes for logged-in user
 app.get('/notes', (req, res) => {
   if (!req.session.userId) {
     return res.status(401).send('Unauthorized');
   }
-  
-  // VULNERABILITY 3 (again): SQL Injection in notes retrieval
+
+  // VULNERABILITY 3: SQL Injection in notes retrieval
   db.all(`SELECT * FROM notes WHERE user_id = ${req.session.userId}`, (err, notes) => {
     if (err) {
       return res.status(500).send('Server error');
     }
     res.json(notes);
+  });
+});
+
+// View single note by ID
+app.get('/notes/id=:id', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const noteId = req.params.id;
+
+  // VULNERABLE: IDOR + SQL Injection
+  db.get(`SELECT * FROM notes WHERE id = ${noteId}`, (err, note) => {
+    if (err || !note) {
+      return res.status(404).send('Note not found');
+    }
+
+    res.send(`
+      <h1>${note.title}</h1>
+      <p>${note.content}</p>
+      <p><strong>Note ID:</strong> ${note.id}</p>
+      <a href="/">Back to Dashboard</a>
+    `);
+  });
+});
+
+// Get single note by ID (JSON format for note.html)
+app.get('/notes/:id', (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).send('Unauthorized');
+  }
+
+  const noteId = req.params.id;
+
+  // VULNERABLE: IDOR + SQL Injection
+  db.get(`SELECT * FROM notes WHERE id = ${noteId}`, (err, note) => {
+    if (err || !note) {
+      return res.status(404).json({ error: 'Note not found' });
+    }
+
+    res.json(note);
   });
 });
 
@@ -236,7 +286,7 @@ app.post('/notes', (req, res) => {
   
   const { title, content } = req.body;
   
-  // VULNERABILITY 3 (again): SQL Injection in note creation
+  // VULNERABILITY: SQL Injection in note creation
   db.run(`INSERT INTO notes (user_id, title, content) VALUES (${req.session.userId}, '${title}', '${content}')`, function(err) {
     if (err) {
       return res.status(500).send('Server error');
@@ -253,8 +303,7 @@ app.put('/notes/:id', (req, res) => {
   const { title, content } = req.body;
   const noteId = req.params.id;
   
-  // VULNERABILITY 4: Insecure Direct Object Reference (IDOR) - no authorization check
-  // Also SQL Injection vulnerability
+  // VULNERABILITY: IDOR + SQL Injection
   db.run(`UPDATE notes SET title = '${title}', content = '${content}' WHERE id = ${noteId}`, function(err) {
     if (err) {
       return res.status(500).send('Server error');
@@ -270,8 +319,7 @@ app.delete('/notes/:id', (req, res) => {
   
   const noteId = req.params.id;
   
-  // VULNERABILITY 4 (again): IDOR - no authorization check
-  // Also SQL Injection vulnerability
+  // VULNERABILITY: IDOR + SQL Injection
   db.run(`DELETE FROM notes WHERE id = ${noteId}`, function(err) {
     if (err) {
       return res.status(500).send('Server error');
@@ -283,7 +331,6 @@ app.delete('/notes/:id', (req, res) => {
 // VULNERABILITY 5: Reflected XSS example
 app.get('/search', (req, res) => {
   const query = req.query.q;
-  // Directly output user input without sanitization
   res.send(`<h1>Search Results for: ${query}</h1><p>No results found.</p>`);
 });
 

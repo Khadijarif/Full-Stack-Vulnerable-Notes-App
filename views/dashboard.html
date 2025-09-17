@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>Dashboard | Notes App</title>
   <style>
-    /* Your existing CSS remains the same */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
@@ -113,6 +112,7 @@
     .note {
       border-bottom: 1px solid #eee;
       padding: 15px 0;
+      position: relative;
     }
 
     .note:last-child {
@@ -139,6 +139,37 @@
 
     .btn-edit:hover {
       background: #7bed9f;
+    }
+
+    .btn-view {
+      background: #1e90ff;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-view:hover {
+      background: #3742fa;
+    }
+
+    .note-id {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .note-content {
+      margin-right: 60px;
     }
   </style>
 </head>
@@ -210,11 +241,22 @@
             const noteElement = document.createElement('div');
             noteElement.className = 'note';
             
-            // VULNERABILITY: Stored XSS - directly injecting user content without sanitization
+            // Create a short preview (first 50 chars)
+            const preview = note.content && note.content.length > 50 
+              ? note.content.substring(0, 50) + '...' 
+              : note.content;
+            
+            // Escape content for XSS protection in preview
+            const escapedPreview = preview.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            
             noteElement.innerHTML = `
-              <h3>${note.title}</h3>
-              <p>${note.content}</p>  <!-- XSS VULNERABILITY HERE -->
+              <div class="note-id">ID: ${note.id}</div>
+              <div class="note-content">
+                <h3>${note.title}</h3>
+                <p>${escapedPreview}</p>
+              </div>
               <div class="note-actions">
+                <button class="btn-view" onclick="viewNote(${note.id})">View Details</button>
                 <button class="btn-edit" onclick="editNote(${note.id}, '${note.title.replace(/'/g, "\\'")}', '${note.content.replace(/'/g, "\\'")}')">Edit</button>
                 <button class="btn-delete" onclick="deleteNote(${note.id})">Delete</button>
               </div>
@@ -223,6 +265,11 @@
           });
         })
         .catch(error => console.error('Error:', error));
+    }
+
+    function viewNote(noteId) {
+      // Redirect to note.html page with the note ID
+      window.location.href = `/note.html?id=${noteId}`;
     }
 
     function addNote(title, content) {
